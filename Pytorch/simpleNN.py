@@ -5,7 +5,6 @@
 # - seaborn >= 0.11.0 
 #! pip install seaborn
 
-## NOTE: Even though we use the PyTorch module, we import it with the name 'torch', which was the original name.
 import torch #? torch provides basic functions, from setting a random seed (for reproducability) to creating tensors.
 import torch.nn as nn #? torch.nn allows us to create a neural network.
 import torch.nn.functional as F #? nn.functional give us access to the activation and loss functions.
