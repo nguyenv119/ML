@@ -11,8 +11,8 @@ import torch.nn as nn #? torch.nn allows us to create a neural network.
 import torch.nn.functional as F #? nn.functional give us access to the activation and loss functions.
 from torch.optim import SGD #? optim contains many optimizers. Here, we're using SGD, stochastic gradient descent.
 
-import matplotlib.pyplot as plt ## matplotlib allows us to draw graphs.
-import seaborn as sns ## seaborn makes it easier to draw nice-looking graphs.
+import matplotlib.pyplot as plt #? matplotlib allows us to draw graphs.
+import seaborn as sns #? seaborn makes it easier to draw nice-looking graphs.
 
 # Build a Simple Neural Network in PyTorch
 
