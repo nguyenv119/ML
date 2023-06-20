@@ -82,29 +82,29 @@ shown at the top of this document. So, let's start by making a sequence of input
 #! torch.linspace() creates the sequence of numbers between, and including, 0 and 1.
 input_doses = torch.linspace(start=0, end=1, steps=11)
 
-#? now print out the doses to make sure they are what we expect...
-# print(input_doses)
+# #? now print out the doses to make sure they are what we expect...
+# # print(input_doses)
 
-# In[ ]:
+# # In[ ]:
 
-#! create the neural network. 
-model = BasicNN() 
+# #! create the neural network. 
+# model = BasicNN() 
 
-#! now run the different doses through the neural network.
-output_values = model(input_doses)
+# #! now run the different doses through the neural network.
+# output_values = model(input_doses)
 
-#! Now draw a graph that shows the effectiveness for each dose.
+# #! Now draw a graph that shows the effectiveness for each dose.
 
-sns.set(style="whitegrid")
-sns.lineplot(x=input_doses, 
-             y=output_values, 
-             color='green', 
-             linewidth=2.5)
+# sns.set(style="whitegrid")
+# sns.lineplot(x=input_doses, 
+#              y=output_values, 
+#              color='green', 
+#              linewidth=2.5)
 
-#? now label the y- and x-axes.
-plt.ylabel('Effectiveness')
-plt.xlabel('Dose')
-plt.show()
+# #? now label the y- and x-axes.
+# plt.ylabel('Effectiveness')
+# plt.xlabel('Dose')
+# plt.show()
 
 #! Now that we know how to create and use a simple neural network, and we can graph the output relative to the input, let's see how to train a neural network. The first thing we need to do is tell **PyTorch** which parameter (or parameters) we want to train, and we do that by setting `requires_grad=True`. In this example, we'll train `final_bias`.
 
@@ -123,14 +123,21 @@ class BasicNN_train(nn.Module):
         
         super().__init__() 
         
-        self.w00 = nn.Parameter(torch.tensor(1.7), requires_grad=False)
-        self.b00 = nn.Parameter(torch.tensor(-0.85), requires_grad=False)
-        self.w01 = nn.Parameter(torch.tensor(-40.8), requires_grad=False)
+        # self.w00 = nn.Parameter(torch.tensor(1.7), requires_grad=False)
+        # self.b00 = nn.Parameter(torch.tensor(-0.85), requires_grad=False)
+        # self.w01 = nn.Parameter(torch.tensor(-40.8), requires_grad=False)
         
-        self.w10 = nn.Parameter(torch.tensor(12.6), requires_grad=False)
-        self.b10 = nn.Parameter(torch.tensor(0.0), requires_grad=False)
-        self.w11 = nn.Parameter(torch.tensor(2.7), requires_grad=False)
+        # self.w10 = nn.Parameter(torch.tensor(12.6), requires_grad=False)
+        # self.b10 = nn.Parameter(torch.tensor(0.0), requires_grad=False)
+        # self.w11 = nn.Parameter(torch.tensor(2.7), requires_grad=False)
 
+        self.w00 = nn.Parameter(torch.tensor(1.), requires_grad=True)
+        self.b00 = nn.Parameter(torch.tensor(0.85), requires_grad=True)
+        self.w01 = nn.Parameter(torch.tensor(40.8), requires_grad=True)
+        
+        self.w10 = nn.Parameter(torch.tensor(11.6), requires_grad=True)
+        self.b10 = nn.Parameter(torch.tensor(0.0), requires_grad=True)
+        self.w11 = nn.Parameter(torch.tensor(2.), requires_grad=True)
         '''
         1. We want to modify final_bias to demonstrate how to optimize it with backpropagation.
         2. The optimal value for final_bias is -16... self.final_bias = nn.Parameter(torch.tensor(-16.), requires_grad=False)
@@ -163,84 +170,89 @@ sns.set(style="whitegrid")
 
 sns.lineplot(x=input_doses, 
              y=output_values.detach(), #! NOTE: because final_bias has a gradident, we call detach() 
-             color='green', 
+             color='red', 
              linewidth=2.5)
 
 plt.ylabel('Effectiveness')
 plt.xlabel('Dose')
+plt.show()
 
 #! The graph shows that when the dose is **0.5**, the output from the unoptimized neural network is **17**, which is wrong, since the output value should be **1**. So, now that we have a parameter we can optimize, let's create some training data that we can use to optimize it.
 
 # In[ ]:
 
-# inputs = torch.tensor([0., 0.5, 1.])
-# labels = torch.tensor([0., 1., 0.])
-# # In[ ]:
+#? input the inputs and correct results
+inputs = torch.tensor([0., 0.5, 1.])
+correctResults = torch.tensor([0., 1., 0.])
+# In[ ]:
 
-# model = BasicNN_train()
+model = BasicNN_train()
 
-# optimizer = SGD(model.parameters(), lr=0.1) #! here we're creating an optimizer to train the neural network.
-#                                             ## NOTE: There are a bunch of different ways to optimize a neural network.
-#                                             ## In this example, we'll use Stochastic Gradient Descent (SGD). However,
-#                                             ## another popular algortihm is Adam (which will be covered in a StatQuest).
+optimizer = SGD(model.parameters(), lr=0.1) #! here we're creating an optimizer to train the neural network.
+                                            ## NOTE: There are a bunch of different ways to optimize a neural network.
+                                            ## In this example, we'll use Stochastic Gradient Descent (SGD). However,
+                                            ## another popular algortihm is Adam (which will be covered in a StatQuest).
 
-# print("Final bias, before optimization: " + str(model.final_bias.data) + "\n")
+# print("Before optimization: " + str(model.final_bias.data) + "\n")
+for name, param in model.named_parameters(): print(name, param)
 
-# #! this is the optimization loop. Each time the optimizer sees all of the training data is called an "epoch".
-# for epoch in range(100):
+#! this is the optimization loop. Each time the optimizer sees all of the training data is called an "epoch".
+for epoch in range(100):
         
-#     #* we create and initialize total_loss for each epoch so that we can evaluate how well model fits the
-#     #* training data. At first, when the model doesn't fit the training data very well, total_loss
-#     #* will be large. However, as gradient descent improves the fit, total_loss will get smaller and smaller.
-#     #* If total_loss gets really small, we can decide that the model fits the data well enough and stop
-#     #* optimizing the fit. Otherwise, we can just keep optimizing until we reach the maximum number of epochs. 
-#     total_loss = 0
+    #* we create and initialize total_loss for each epoch so that we can evaluate how well model fits the
+    #* training data. At first, when the model doesn't fit the training data very well, total_loss
+    #* will be large. However, as gradient descent improves the fit, total_loss will get smaller and smaller.
+    #* If total_loss gets really small, we can decide that the model fits the data well enough and stop
+    #* optimizing the fit. Otherwise, we can just keep optimizing until we reach the maximum number of epochs. 
+    total_loss = 0
     
-#     #! this internal loop is where the optimizer sees all of the training data and where we calculate the total_loss for all of the training data.
-#     for iteration in range(len(inputs)):
+    #! this internal loop is where the optimizer sees all of the training data and where we calculate the total_loss for all of the training data.
+    for iteration in range(len(inputs)):
         
-#         input_i = inputs[iteration] ## extract a single input value (a single dose)...
-#         label_i = labels[iteration] ## ...and its corresponding label (the effectiveness for the dose).
+        input_i = inputs[iteration] ## extract a single input value (a single dose)...
+        label_i = correctResults[iteration] ## ...and its corresponding label (the effectiveness for the dose).
         
-#         output_i = model(input_i) ## calculate the neural network output for the input (the single dose).
+        output_i = model(input_i) ## calculate the neural network output for the input (the single dose).
         
-#         loss = (output_i - label_i)**2 #! calculate the loss for the single value.
-#                                        ## NOTE: Because output_i = model(input_i), "loss" has a connection to "model"
-#                                        ## and the derivative (calculated in the next step) is kept and accumulated
-#                                        ## in "model".
+        loss = (output_i - label_i)**2 #! calculate the loss for the single value.
+                                       ## NOTE: Because output_i = model(input_i), "loss" has a connection to "model"
+                                       ## and the derivative (calculated in the next step) is kept and accumulated
+                                       ## in "model".
         
-#         loss.backward() #! backward() calculates the derivative for that single value and adds it to the previous one.
+        loss.backward() #! backward() calculates the derivative for that single value and adds it to the previous one.
         
-#         total_loss += float(loss) # accumulate the total loss for this epoch.
+        total_loss += float(loss) # accumulate the total loss for this epoch.
         
         
-#     if (total_loss < 0.0001):
-#         print("Num steps: " + str(epoch))
-#         break
+    if (total_loss < 0.0001):
+        print("Num steps: " + str(epoch))
+        break
       
-#     optimizer.step() #! take a step toward the optimal value.
-#     optimizer.zero_grad() #! This zeroes out the gradient stored in "model". 
-#                           ##?Remember, by default, gradients are added to the previous step (the gradients are accumulated),
-#                           #? and we took advantage of this process to calculate the derivative one data point at a time.
+    optimizer.step() #! take a step toward the optimal value.
+    optimizer.zero_grad() #! This zeroes out the gradient stored in "model". 
+                          ##?Remember, by default, gradients are added to the previous step (the gradients are accumulated),
+                          #? and we took advantage of this process to calculate the derivative one data point at a time.
 
-#                           #! NOTE: "optimizer" has access to "model" because of how it was created with the call 
-#                           #? (made earlier): optimizer = SGD(model.parameters(), lr=0.1).
-#                           #? ALSO NOTE: Alternatively, we can zero out the gradient with model.zero_grad().
+                          #! NOTE: "optimizer" has access to "model" because of how it was created with the call 
+                          #? (made earlier): optimizer = SGD(model.parameters(), lr=0.1).
+                          #? ALSO NOTE: Alternatively, we can zero out the gradient with model.zero_grad().
     
-#     print("Step: " + str(epoch) + " Final Bias: " + str(model.final_bias.data) + "\n")
-#     ## now go back to the start of the loop and go through another epoch.
+    print("Step: " + str(epoch) + " Final Bias: " + str(model.final_bias.data) + "\n")
+    ## now go back to the start of the loop and go through another epoch.
 
-# print("Total loss: " + str(total_loss))
+print("Total loss: " + str(total_loss))
 # print("Final bias, after optimization: " + str(model.final_bias.data))
+for name, param in model.named_parameters(): print(name, param)
 
-# #! So, if everything worked correctly, the optimizer should have converged on `final_bias = 16.0019` after **34** steps, or epochs. **BAM!**
-# # In[ ]:
-# output_values = model(input_doses)
-# sns.set(style="whitegrid")
-# sns.lineplot(x=input_doses, 
-#              y=output_values.detach(), ## NOTE: we call detach() because final_bias has a gradient
-#              color='green', 
-#              linewidth=2.5)
+#! So, if everything worked correctly, the optimizer should have converged on `final_bias = 16.0019` after **34** steps, or epochs. **BAM!**
+# In[ ]:
+output_values = model(input_doses)
+sns.set(style="whitegrid")
+sns.lineplot(x=input_doses, 
+             y=output_values.detach(), ## NOTE: we call detach() because final_bias has a gradient
+             color='green', 
+             linewidth=2.5)
 
-# plt.ylabel('Effectiveness')
-# plt.xlabel('Dose')
+plt.ylabel('Effectiveness')
+plt.xlabel('Dose')
+plt.show()
