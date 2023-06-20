@@ -82,29 +82,30 @@ shown at the top of this document. So, let's start by making a sequence of input
 #! torch.linspace() creates the sequence of numbers between, and including, 0 and 1.
 input_doses = torch.linspace(start=0, end=1, steps=11)
 
-# #? now print out the doses to make sure they are what we expect...
-# # print(input_doses)
+#? now print out the doses to make sure they are what we expect...
+print(input_doses)
 
-# # In[ ]:
+# In[ ]:
 
-# #! create the neural network. 
-# model = BasicNN() 
+#! create the neural network. 
+model = BasicNN() 
 
-# #! now run the different doses through the neural network.
-# output_values = model(input_doses)
+#! now run the different doses through the neural network.
+output_values = model(input_doses)
 
-# #! Now draw a graph that shows the effectiveness for each dose.
+#! Now draw a graph that shows the effectiveness for each dose.
 
-# sns.set(style="whitegrid")
-# sns.lineplot(x=input_doses, 
-#              y=output_values, 
-#              color='green', 
-#              linewidth=2.5)
+sns.set(style="whitegrid")
+sns.lineplot(x=input_doses, 
+             y=output_values, 
+             color='green', 
+             linewidth=2.5)
 
-# #? now label the y- and x-axes.
-# plt.ylabel('Effectiveness')
-# plt.xlabel('Dose')
-# plt.show()
+#? now label the y- and x-axes.
+plt.title("Correct Plot")
+plt.ylabel('Effectiveness')
+plt.xlabel('Dose')
+plt.show()
 
 #! Now that we know how to create and use a simple neural network, and we can graph the output relative to the input, let's see how to train a neural network. The first thing we need to do is tell **PyTorch** which parameter (or parameters) we want to train, and we do that by setting `requires_grad=True`. In this example, we'll train `final_bias`.
 
@@ -123,21 +124,29 @@ class BasicNN_train(nn.Module):
         
         super().__init__() 
         
-        # self.w00 = nn.Parameter(torch.tensor(1.7), requires_grad=False)
-        # self.b00 = nn.Parameter(torch.tensor(-0.85), requires_grad=False)
-        # self.w01 = nn.Parameter(torch.tensor(-40.8), requires_grad=False)
+        self.w00 = nn.Parameter(torch.tensor(1.7), requires_grad=False)
+        self.b00 = nn.Parameter(torch.tensor(-0.85), requires_grad=False)
+        self.w01 = nn.Parameter(torch.tensor(-40.8), requires_grad=False)
         
-        # self.w10 = nn.Parameter(torch.tensor(12.6), requires_grad=False)
-        # self.b10 = nn.Parameter(torch.tensor(0.0), requires_grad=False)
-        # self.w11 = nn.Parameter(torch.tensor(2.7), requires_grad=False)
+        self.w10 = nn.Parameter(torch.tensor(12.6), requires_grad=False)
+        self.b10 = nn.Parameter(torch.tensor(0.0), requires_grad=False)
+        self.w11 = nn.Parameter(torch.tensor(2.7), requires_grad=False)
 
-        self.w00 = nn.Parameter(torch.tensor(1.), requires_grad=True)
-        self.b00 = nn.Parameter(torch.tensor(0.85), requires_grad=True)
-        self.w01 = nn.Parameter(torch.tensor(40.8), requires_grad=True)
+        # self.w00 = nn.Parameter(torch.tensor(1.7), requires_grad=True)
+        # self.b00 = nn.Parameter(torch.tensor(-0.85), requires_grad=True)
+        # self.w01 = nn.Parameter(torch.tensor(-40.8), requires_grad=True)
         
-        self.w10 = nn.Parameter(torch.tensor(11.6), requires_grad=True)
-        self.b10 = nn.Parameter(torch.tensor(0.0), requires_grad=True)
-        self.w11 = nn.Parameter(torch.tensor(2.), requires_grad=True)
+        # self.w10 = nn.Parameter(torch.tensor(12.6), requires_grad=True)
+        # self.b10 = nn.Parameter(torch.tensor(0.0), requires_grad=True)
+        # self.w11 = nn.Parameter(torch.tensor(2.7), requires_grad=True)
+
+        # self.w00 = nn.Parameter(torch.tensor(1.), requires_grad=True)
+        # self.b00 = nn.Parameter(torch.tensor(0.85), requires_grad=True)
+        # self.w01 = nn.Parameter(torch.tensor(40.8), requires_grad=True)
+        
+        # self.w10 = nn.Parameter(torch.tensor(11.6), requires_grad=True)
+        # self.b10 = nn.Parameter(torch.tensor(0.0), requires_grad=True)
+        # self.w11 = nn.Parameter(torch.tensor(2.), requires_grad=True)
         '''
         1. We want to modify final_bias to demonstrate how to optimize it with backpropagation.
         2. The optimal value for final_bias is -16... self.final_bias = nn.Parameter(torch.tensor(-16.), requires_grad=False)
@@ -170,9 +179,9 @@ sns.set(style="whitegrid")
 
 sns.lineplot(x=input_doses, 
              y=output_values.detach(), #! NOTE: because final_bias has a gradident, we call detach() 
-             color='red', 
+             color='black', 
              linewidth=2.5)
-
+plt.title("Before Opt")
 plt.ylabel('Effectiveness')
 plt.xlabel('Dose')
 plt.show()
@@ -193,7 +202,7 @@ optimizer = SGD(model.parameters(), lr=0.1) #! here we're creating an optimizer 
                                             ## In this example, we'll use Stochastic Gradient Descent (SGD). However,
                                             ## another popular algortihm is Adam (which will be covered in a StatQuest).
 
-# print("Before optimization: " + str(model.final_bias.data) + "\n")
+print("Before optimization: " + "\n")
 for name, param in model.named_parameters(): print(name, param)
 
 #! this is the optimization loop. Each time the optimizer sees all of the training data is called an "epoch".
@@ -237,10 +246,10 @@ for epoch in range(100):
                           #? (made earlier): optimizer = SGD(model.parameters(), lr=0.1).
                           #? ALSO NOTE: Alternatively, we can zero out the gradient with model.zero_grad().
     
-    print("Step: " + str(epoch) + " Final Bias: " + str(model.final_bias.data) + "\n")
+    # print("Step: " + str(epoch) + " Final Bias: " + str(model.final_bias.data) + "\n")
     ## now go back to the start of the loop and go through another epoch.
 
-print("Total loss: " + str(total_loss))
+print("Total loss: " + str(total_loss) + "\n")
 # print("Final bias, after optimization: " + str(model.final_bias.data))
 for name, param in model.named_parameters(): print(name, param)
 
@@ -250,9 +259,10 @@ output_values = model(input_doses)
 sns.set(style="whitegrid")
 sns.lineplot(x=input_doses, 
              y=output_values.detach(), ## NOTE: we call detach() because final_bias has a gradient
-             color='green', 
+             color='orange', 
              linewidth=2.5)
 
+plt.title("After Opt")
 plt.ylabel('Effectiveness')
 plt.xlabel('Dose')
 plt.show()
