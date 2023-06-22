@@ -106,7 +106,7 @@ class BasicLightningTrain(L.LightningModule):
         self.b10 = nn.Parameter(torch.tensor(0.0), requires_grad=False)
         self.w11 = nn.Parameter(torch.tensor(2.7), requires_grad=False)
 
-        self.final_bias = nn.Parameter(torch.tensor(0.0), requires_grad=True)
+        self.final_bias = nn.Parameter(torch.tensor(0.), requires_grad=True)
         
         self.learning_rate = 0.01 #! NOTE: we will improve this value later, so this is just a placeholder until then. In other words, 
                                   # we could put any value here
@@ -168,6 +168,7 @@ plt.xlabel('Dose')
 
 # inputs = torch.tensor([0., 0.5, 1.])
 # labels = torch.tensor([0., 1., 0.])
+
 inputs = torch.tensor([0., 0.5, 1.] * 100)
 labels = torch.tensor([0., 1., 0.] * 100)
 
@@ -211,7 +212,7 @@ model.learning_rate = new_lr
 #? 3. Keeps doing this for each epoch we requested
 
 trainer.fit(model, train_dataloaders=dataloader)
-print("Final Bias After Optimization: " + str(model.final_bias.data))
+print("Final Bias After Optimization: " + str(model.final_bias.data) + "\n")
 
 output_values = model(input_doses)
 sns.set(style="whitegrid")
